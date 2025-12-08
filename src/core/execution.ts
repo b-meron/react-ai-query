@@ -103,12 +103,19 @@ export const executeAI = async <T>(args: {
 
   if (args.fallback !== undefined) {
     const fallbackValue = typeof args.fallback === "function" ? (args.fallback as () => T)() : args.fallback;
-    return {
+    const fallbackResult: AIExecutionResult<T> = {
       data: fallbackValue,
       tokens: 0,
       estimatedUSD: 0,
       fromCache: false
     };
+    
+    // Cache fallback results to prevent repeated execution paths
+    if (cacheKey && cachePolicy === "session") {
+      setSessionCache(cacheKey, fallbackResult);
+    }
+    
+    return fallbackResult;
   }
 
   if (lastError instanceof AIError) throw lastError;

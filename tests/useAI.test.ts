@@ -11,7 +11,7 @@ describe("executeAI", () => {
             provider: "mock",
         });
 
-        expect(result.data).toContain("Mock response for: Test prompt");
+        expect(result.data).toContain("Mock value for: Test prompt");
         expect(result.tokens).toBeGreaterThan(0);
         expect(result.estimatedUSD).toBeGreaterThan(0);
         expect(result.fromCache).toBe(false);
@@ -40,14 +40,15 @@ describe("executeAI", () => {
     });
 
     it("uses fallback on validation error", async () => {
+        // Use a schema with constraints the mock can't satisfy
         const result = await executeAI({
             prompt: "Test",
-            schema: z.number(), // Mock returns string, will fail validation
+            schema: z.number().min(100), // Mock returns 42, which fails min(100) validation
             provider: "mock",
-            fallback: 42,
+            fallback: 999,
         });
 
-        expect(result.data).toBe(42);
+        expect(result.data).toBe(999);
     });
 });
 
