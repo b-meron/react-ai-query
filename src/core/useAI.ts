@@ -1,51 +1,58 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { executeAI } from "./execution";
 import { AIError, ProviderKind, UseAIOptions, UseAIResult } from "./types";
 import { stableStringify } from "./utils";
 
 /**
- * Custom hook that returns a stable reference to a value,
- * only updating when the deep value actually changes.
+ * Build a stable cache key from all options that should trigger a re-fetch
  */
-function useStableValue<T>(value: T): T {
-  const serialized = stableStringify(value);
-  const ref = useRef<T>(value);
-
-  // Only update ref if serialized value changed
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => {
-    ref.current = value;
-    return ref.current;
-  }, [serialized]);
-}
+const buildOptionsKey = <T>(options: UseAIOptions<T>): string => {
+  return [
+    options.prompt,
+    stableStringify(options.input),
+    options.temperature ?? 0,
+    options.cache ?? "session",
+    options.timeoutMs ?? 15000,
+    options.retry ?? 1,
+  ].join("::");
+};
 
 export function useAI<T>(options: UseAIOptions<T>): UseAIResult<T> {
   const [data, setData] = useState<T | undefined>(undefined);
   const [error, setError] = useState<AIError | undefined>(undefined);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true); // Start as loading
   const [tokens, setTokens] = useState<number | undefined>(undefined);
   const [estimatedUSD, setEstimatedUSD] = useState<number | undefined>(undefined);
   const [fromCache, setFromCache] = useState<boolean | undefined>(undefined);
 
-  // Stabilize object inputs to prevent infinite re-renders when consumers
-  // pass inline objects like `input: { message }` or `fallback: { default: true }`
-  const stableInput = useStableValue(options.input);
-  const stableFallback = useStableValue(options.fallback);
+  // Track the current options key to detect actual changes
+  const optionsKey = buildOptionsKey(options);
+  const lastKeyRef = useRef<string>("");
+  const isRunningRef = useRef<boolean>(false);
+
+  // Store latest options in a ref to avoid stale closures
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
   const run = useCallback(async () => {
+    if (isRunningRef.current) return; // Prevent concurrent runs
+    isRunningRef.current = true;
+
     setLoading(true);
     setError(undefined);
+
     try {
+      const currentOptions = optionsRef.current;
       const result = await executeAI<T>({
-        prompt: options.prompt,
-        input: stableInput,
-        schema: options.schema,
-        provider: options.provider as ProviderKind,
-        temperature: options.temperature,
-        cache: options.cache,
-        timeoutMs: options.timeoutMs,
-        retry: options.retry,
-        fallback: stableFallback
+        prompt: currentOptions.prompt,
+        input: currentOptions.input,
+        schema: currentOptions.schema,
+        provider: currentOptions.provider as ProviderKind,
+        temperature: currentOptions.temperature,
+        cache: currentOptions.cache,
+        timeoutMs: currentOptions.timeoutMs,
+        retry: currentOptions.retry,
+        fallback: currentOptions.fallback
       });
       setData(result.data);
       setTokens(result.tokens);
@@ -57,22 +64,17 @@ export function useAI<T>(options: UseAIOptions<T>): UseAIResult<T> {
       setData(undefined);
     } finally {
       setLoading(false);
+      isRunningRef.current = false;
     }
-  }, [
-    options.prompt,
-    stableInput,
-    options.schema,
-    options.provider,
-    options.temperature,
-    options.cache,
-    options.timeoutMs,
-    options.retry,
-    stableFallback
-  ]);
+  }, []); // Empty deps - uses refs for latest values
 
+  // Only run when the options key actually changes
   useEffect(() => {
-    run();
-  }, [run]);
+    if (optionsKey !== lastKeyRef.current) {
+      lastKeyRef.current = optionsKey;
+      run();
+    }
+  }, [optionsKey, run]);
 
   return {
     data,

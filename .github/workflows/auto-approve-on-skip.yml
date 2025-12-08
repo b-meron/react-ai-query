@@ -1,0 +1,26 @@
+name: Auto-approve PR for #skipreview comment
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  approve-if-skipreview:
+    if: github.event.issue.pull_request != null
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check comment author and content
+        id: check
+        run: |
+          AUTHOR="${{ github.event.comment.user.login }}"
+          BODY="${{ github.event.comment.body }}"
+          if [[ "$AUTHOR" == "b-meron" && "$BODY" == "#skipreview" ]]; then
+            echo "skipreview=1" >> $GITHUB_OUTPUT
+          else
+            echo "skipreview=0" >> $GITHUB_OUTPUT
+      - name: Approve Pull Request
+        if: steps.check.outputs.skipreview == '1'
+        run: |
+          gh pr review ${{ github.event.issue.pull_request.url }} --approve
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
