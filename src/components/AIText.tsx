@@ -5,7 +5,7 @@ import { AIError, AnyZodSchema, CachePolicy, ProviderKind } from "../core/types"
 interface AITextProps<T> {
   prompt: string;
   input?: unknown;
-  schema: AnyZodSchema<T>;
+  schema: AnyZodSchema;
   provider?: ProviderKind;
   temperature?: number;
   cache?: CachePolicy;

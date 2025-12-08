@@ -3,9 +3,9 @@ import { ZodType } from "zod";
 export type ProviderName = "mock" | "openai" | "local";
 export type ProviderKind = ProviderName | AIProvider;
 
-// Use ZodType with relaxed generics to avoid "Type instantiation is excessively deep" errors
+// Completely decoupled schema type to avoid TypeScript depth errors
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AnyZodSchema<T = unknown> = ZodType<T, any, any>;
+export type AnyZodSchema = ZodType<any, any, any>;
 
 export interface AIExecutionResult<T> {
   data: T;
@@ -14,17 +14,17 @@ export interface AIExecutionResult<T> {
   fromCache?: boolean;
 }
 
-export interface ProviderExecuteArgs<T> {
+export interface ProviderExecuteArgs {
   prompt: string;
   input?: unknown;
-  schema: AnyZodSchema<T>;
+  schema: AnyZodSchema;
   temperature: number;
   signal?: AbortSignal;
 }
 
 export interface AIProvider {
   name: string;
-  execute<T>(args: ProviderExecuteArgs<T>): Promise<AIExecutionResult<T>>;
+  execute<T>(args: ProviderExecuteArgs): Promise<AIExecutionResult<T>>;
 }
 
 export interface CostBreakdown {
@@ -35,7 +35,7 @@ export interface CostBreakdown {
 export interface UseAIOptions<T> {
   prompt: string;
   input?: unknown;
-  schema: AnyZodSchema<T>;
+  schema: AnyZodSchema;
   provider?: ProviderKind;
   temperature?: number;
   cache?: "session" | false;

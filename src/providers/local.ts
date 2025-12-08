@@ -33,7 +33,7 @@ class LocalProviderImpl implements AIProvider {
     this.config = config;
   }
 
-  async execute<T>({ prompt, input, schema, temperature, signal }: ProviderExecuteArgs<T>): Promise<AIExecutionResult<T>> {
+  async execute<T>({ prompt, input, schema, temperature, signal }: ProviderExecuteArgs): Promise<AIExecutionResult<T>> {
     const fetcher = resolveFetch();
     const endpoint = this.config.endpoint ?? DEFAULT_ENDPOINT;
     const model = this.config.model ?? DEFAULT_MODEL;

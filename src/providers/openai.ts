@@ -54,7 +54,7 @@ class OpenAIProviderImpl implements AIProvider {
     this.config = config;
   }
 
-  async execute<T>({ prompt, input, schema, temperature, signal }: ProviderExecuteArgs<T>): Promise<AIExecutionResult<T>> {
+  async execute<T>({ prompt, input, schema, temperature, signal }: ProviderExecuteArgs): Promise<AIExecutionResult<T>> {
     const client = getClient(this.config);
     const systemPrompt = [
       "You are a deterministic function for a React UI runtime.",
