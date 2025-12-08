@@ -7,10 +7,10 @@ interface CacheEntry<T> extends AIExecutionResult<T> {
 
 const sessionCache = new Map<string, CacheEntry<unknown>>();
 
-export const buildCacheKey = <T>(args: {
+export const buildCacheKey = (args: {
   prompt: string;
   input?: unknown;
-  schema: AnyZodSchema<T>;
+  schema: AnyZodSchema;
 }): string => {
   const schemaId = (args.schema as unknown as { description?: string; _def?: { typeName?: string } }).description ||
     (args.schema as unknown as { _def?: { typeName?: string } })._def?.typeName ||

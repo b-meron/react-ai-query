@@ -20,7 +20,7 @@ const selectProvider = (provider?: ProviderKind) => {
 export const executeAI = async <T>(args: {
   prompt: string;
   input?: unknown;
-  schema: AnyZodSchema<T>;
+  schema: AnyZodSchema;
   provider?: ProviderKind;
   temperature?: number;
   cache?: CachePolicy;
