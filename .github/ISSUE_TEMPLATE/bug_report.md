@@ -1,9 +1,9 @@
 ---
 name: Bug Report
 about: Report a bug to help us improve
-title: '[Bug] '
+title: "[Bug] "
 labels: bug
-assignees: ''
+assignees: ""
 ---
 
 ## Describe the Bug
@@ -34,12 +34,11 @@ What actually happened instead.
 
 ## Environment
 
-- **Node.js version**: 
-- **intent-ui-lib version**: 
-- **Browser** (if applicable): 
-- **OS**: 
+- **Node.js version**:
+- **react-ai-query version**:
+- **Browser** (if applicable):
+- **OS**:
 
 ## Additional Context
 
 Add any other context about the problem here.
-

@@ -1,5 +1,5 @@
 {
-  "name": "intent-ui-lib",
+  "name": "react-ai-query",
   "version": "0.1.0",
   "description": "Schema-safe AI inference for React — headless, cached, cost-aware, deterministic by default.",
   "license": "MIT",
@@ -17,12 +17,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/b-meron/intent-ui-lib.git"
+    "url": "git+https://github.com/b-meron/react-ai-query.git"
   },
   "bugs": {
-    "url": "https://github.com/b-meron/intent-ui-lib/issues"
+    "url": "https://github.com/b-meron/react-ai-query/issues"
   },
-  "homepage": "https://github.com/b-meron/intent-ui-lib#readme",
+  "homepage": "https://github.com/b-meron/react-ai-query#readme",
   "author": "Binyamin Meron",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

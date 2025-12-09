@@ -1,7 +1,7 @@
 # Intent UI Library
 
-[![CI](https://github.com/b-meron/intent-ui-lib/actions/workflows/ci.yml/badge.svg)](https://github.com/b-meron/intent-ui-lib/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/intent-ui-lib.svg)](https://www.npmjs.com/package/intent-ui-lib)
+[![CI](https://github.com/b-meron/react-ai-query/actions/workflows/ci.yml/badge.svg)](https://github.com/b-meron/react-ai-query/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/react-ai-query.svg)](https://www.npmjs.com/package/react-ai-query)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 
@@ -9,7 +9,7 @@
 
 > Think of it as **React Query for AI**: declare what you need, get typed data back.
 
-**[▶️ Try the Live Demo](https://b-meron.github.io/intent-ui-lib/)**
+**[▶️ Try the Live Demo](https://b-meron.github.io/react-ai-query/)**
 
 ## Problem
 
@@ -25,14 +25,14 @@ This library enforces all of these guarantees.
 ## Installation
 
 ```bash
-npm install intent-ui-lib zod react
+npm install react-ai-query zod react
 ```
 
 ## Quick Start
 
 ```tsx
 import { z } from "zod";
-import { AIText } from "intent-ui-lib";
+import { AIText } from "react-ai-query";
 
 export function ErrorSummary({ error }: { error: Error }) {
   return (
@@ -162,7 +162,7 @@ Headless render-prop component wrapping `useAI`:
 Groq offers free API access with fast inference. Get a free key at [console.groq.com](https://console.groq.com):
 
 ```tsx
-import { createGroqProvider, useAI } from "intent-ui-lib";
+import { createGroqProvider, useAI } from "react-ai-query";
 
 const groqProvider = createGroqProvider({ apiKey: "your-groq-api-key" });
 
@@ -177,7 +177,7 @@ const { data } = useAI({
 #### OpenAI Provider
 
 ```tsx
-import { createOpenAIProvider, useAI } from "intent-ui-lib";
+import { createOpenAIProvider, useAI } from "react-ai-query";
 
 const openaiProvider = createOpenAIProvider({
   apiKey: "your-openai-api-key",
@@ -195,7 +195,7 @@ const { data } = useAI({
 #### Local Provider (Ollama, LM Studio)
 
 ```tsx
-import { createLocalProvider, useAI } from "intent-ui-lib";
+import { createLocalProvider, useAI } from "react-ai-query";
 
 const localProvider = createLocalProvider({
   endpoint: "http://localhost:11434/v1/chat/completions", // Ollama default
@@ -227,7 +227,7 @@ LLMs sometimes return unexpected formats. Intent UI handles common quirks automa
 LLMs often return enum values in different cases. Use this helper for case-insensitive enum validation:
 
 ```tsx
-import { caseInsensitiveEnum } from "intent-ui-lib";
+import { caseInsensitiveEnum } from "react-ai-query";
 import { z } from "zod";
 
 const schema = z.object({
@@ -247,7 +247,7 @@ This is explicit opt-in — you control which enums are case-insensitive.
 Converts a Zod schema to the JSON example string injected into LLM prompts. Useful for debugging or custom providers:
 
 ```tsx
-import { zodToJsonExample } from "intent-ui-lib";
+import { zodToJsonExample } from "react-ai-query";
 import { z } from "zod";
 
 const schema = z.object({
