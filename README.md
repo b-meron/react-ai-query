@@ -147,23 +147,43 @@ Headless render-prop component wrapping `useAI`:
 
 ### Providers
 
-| Provider         | Use Case                                                  |
-| ---------------- | --------------------------------------------------------- |
-| `mockProvider`   | Development, deterministic, zero cost                     |
-| `openAIProvider` | Production, uses `gpt-4o-mini`, requires `OPENAI_API_KEY` |
-| `localProvider`  | Local LLMs (Ollama, LM Studio), $0 cost                   |
-| Custom           | Implement `AIProvider` interface                          |
+| Provider             | Use Case                                                  |
+| -------------------- | --------------------------------------------------------- |
+| `mockProvider`       | Development, deterministic, zero cost                     |
+| `createGroqProvider` | Free cloud LLMs via Groq, uses `llama-3.1-8b-instant`     |
+| `openAIProvider`     | Production, uses `gpt-4o-mini`, requires `OPENAI_API_KEY` |
+| `localProvider`      | Local LLMs (Ollama, LM Studio), $0 cost                   |
+| Custom               | Implement `AIProvider` interface                          |
+
+#### Groq Provider (Free)
+
+Groq offers free API access with fast inference. Get a free key at [console.groq.com](https://console.groq.com):
+
+```tsx
+import { createGroqProvider, useAI } from "intent-ui-lib";
+
+const groqProvider = createGroqProvider({ apiKey: "your-groq-api-key" });
+
+const { data } = useAI({
+  prompt: "Summarize this text",
+  input: { text },
+  schema: z.string(),
+  provider: groqProvider,
+});
+```
 
 ### LLM Quirk Handling
 
 LLMs sometimes return unexpected formats. Intent UI handles common quirks automatically:
 
-| Quirk                                        | Handling                      |
-| -------------------------------------------- | ----------------------------- |
-| Wrapped responses (`{"data": ...}`)          | Auto-unwrapped                |
-| Extra text after JSON (`{...}\n\nNote: ...`) | Extracted JSON, ignored text  |
-| Extra whitespace                             | Trimmed before parsing        |
-| Enum casing (`"POSITIVE"` vs `"positive"`)   | **Opt-in** via helper (below) |
+| Quirk                                        | Handling                             |
+| -------------------------------------------- | ------------------------------------ |
+| Wrapped responses (`{"data": ...}`)          | Auto-unwrapped                       |
+| Other wrappers (`{"result": ...}`, etc.)     | Auto-unwrapped for primitive schemas |
+| Extra text after JSON (`{...}\n\nNote: ...`) | Extracted JSON, ignored text         |
+| Extra whitespace                             | Trimmed before parsing               |
+| Enum casing (`"POSITIVE"` vs `"positive"`)   | **Opt-in** via helper (below)        |
+| Primitive schemas (string, number, boolean)  | Smart prompts to avoid JSON wrapping |
 
 ### `caseInsensitiveEnum(values)`
 

@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { AIText, clearSessionCache, localProvider, mockProvider, openAIProvider, useAI } from "../src";
+import { AIText, clearSessionCache, createGroqProvider, createOpenAIProvider, localProvider, mockProvider, useAI } from "../src";
 
 const errorSchema = z.string();
 const featureFlagSchema = z.boolean();
@@ -9,7 +9,10 @@ const approvalSchema = z.object({
   reason: z.string()
 });
 
-type ProviderChoice = "mock" | "openai" | "local";
+type ProviderChoice = "mock" | "openai" | "local" | "groq";
+
+const GROQ_KEY_STORAGE = "intent-ui-groq-key";
+const OPENAI_KEY_STORAGE = "intent-ui-openai-key";
 
 const formatUSD = (usd?: number) => (usd === undefined ? "—" : `$${usd.toFixed(6)}`);
 
@@ -36,11 +39,44 @@ const CostBadge = ({ tokens, usd, fromCache, usedFallback }: { tokens?: number; 
 
 export default function DemoPage() {
   const [providerName, setProviderName] = useState<ProviderChoice>("mock");
+  const [groqApiKey, setGroqApiKey] = useState("");
+  const [openaiApiKey, setOpenaiApiKey] = useState("");
+  
+  // Load API keys from localStorage on mount
+  useEffect(() => {
+    const savedGroqKey = localStorage.getItem(GROQ_KEY_STORAGE);
+    if (savedGroqKey) setGroqApiKey(savedGroqKey);
+    
+    const savedOpenaiKey = localStorage.getItem(OPENAI_KEY_STORAGE);
+    if (savedOpenaiKey) setOpenaiApiKey(savedOpenaiKey);
+  }, []);
+  
+  // Save Groq API key to localStorage
+  const handleGroqKeyChange = (key: string) => {
+    setGroqApiKey(key);
+    if (key) {
+      localStorage.setItem(GROQ_KEY_STORAGE, key);
+    } else {
+      localStorage.removeItem(GROQ_KEY_STORAGE);
+    }
+  };
+  
+  // Save OpenAI API key to localStorage
+  const handleOpenaiKeyChange = (key: string) => {
+    setOpenaiApiKey(key);
+    if (key) {
+      localStorage.setItem(OPENAI_KEY_STORAGE, key);
+    } else {
+      localStorage.removeItem(OPENAI_KEY_STORAGE);
+    }
+  };
+
   const provider = useMemo(() => {
-    if (providerName === "openai") return openAIProvider;
+    if (providerName === "openai") return createOpenAIProvider({ apiKey: openaiApiKey });
     if (providerName === "local") return localProvider;
+    if (providerName === "groq") return createGroqProvider({ apiKey: groqApiKey });
     return mockProvider;
-  }, [providerName]);
+  }, [providerName, groqApiKey, openaiApiKey]);
 
   const errorInput = { code: "EMAIL_REQUIRED", message: "Email field is missing", field: "email" };
 
@@ -94,16 +130,35 @@ export default function DemoPage() {
               Headless components + providers. Deterministic defaults, Zod validation, cache-first execution.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <select
               className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50"
               value={providerName}
               onChange={(event) => setProviderName(event.target.value as ProviderChoice)}
             >
               <option value="mock">Mock (deterministic)</option>
+              <option value="groq">Groq (free LLM)</option>
               <option value="openai">OpenAI (browser)</option>
-              <option value="local">Local (Ollama/LM Studio)</option>
+              <option value="local">Local (Ollama) ⚠️</option>
             </select>
+            {providerName === "groq" && (
+              <input
+                type="password"
+                placeholder="Groq API key (free at console.groq.com)"
+                value={groqApiKey}
+                onChange={(e) => handleGroqKeyChange(e.target.value)}
+                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50 placeholder-slate-500 w-64"
+              />
+            )}
+            {providerName === "openai" && (
+              <input
+                type="password"
+                placeholder="OpenAI API key (platform.openai.com)"
+                value={openaiApiKey}
+                onChange={(e) => handleOpenaiKeyChange(e.target.value)}
+                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50 placeholder-slate-500 w-64"
+              />
+            )}
             <button
               onClick={() => {
                 clearSessionCache();

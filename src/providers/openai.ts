@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { AIExecutionResult, AIProvider, ProviderExecuteArgs } from "../core/types";
 import { deriveCost, estimateUSD } from "../core/cost";
 import { AIError } from "../core/types";
-import { stableStringify, zodToJsonExample } from "../core/utils";
+import { stableStringify, zodToJsonExample, unwrapLLMResponse } from "../core/utils";
 
 export interface OpenAIProviderConfig {
   apiKey?: string;
@@ -91,7 +91,7 @@ class OpenAIProviderImpl implements AIProvider {
       : (messageContent ?? "");
 
     const parsed = typeof content === "string" ? safeJsonParse(content) : undefined;
-    const data = parsed && typeof parsed === "object" && "data" in parsed ? (parsed as { data: unknown }).data : undefined;
+    const data = unwrapLLMResponse(parsed, schema);
 
     if (data === undefined) {
       throw new AIError("OpenAI returned no data", "provider_error");

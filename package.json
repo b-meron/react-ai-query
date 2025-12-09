@@ -32,6 +32,7 @@
     "dev": "vite",
     "preview": "vite preview",
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "build:demo": "vite build --outDir demo-dist",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "lint": "tsc --noEmit"

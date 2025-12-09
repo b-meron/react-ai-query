@@ -2,6 +2,59 @@ import { z } from "zod";
 import { AnyZodSchema } from "./types";
 
 /**
+ * Check if a Zod schema expects a primitive type (string, number, boolean).
+ * Used to adjust LLM prompts for better response formatting.
+ */
+export const isPrimitiveSchema = (schema: AnyZodSchema): boolean => {
+  const typeName = (schema as unknown as { _def?: { typeName?: string } })._def?.typeName;
+  return typeName === "ZodString" || typeName === "ZodNumber" || typeName === "ZodBoolean";
+};
+
+/**
+ * Get the primitive type name for a schema, if applicable.
+ */
+export const getPrimitiveTypeName = (schema: AnyZodSchema): string | null => {
+  const typeName = (schema as unknown as { _def?: { typeName?: string } })._def?.typeName;
+  if (typeName === "ZodString") return "string";
+  if (typeName === "ZodNumber") return "number";
+  if (typeName === "ZodBoolean") return "boolean";
+  return null;
+};
+
+/**
+ * Unwrap LLM response from common wrapper patterns.
+ * LLMs often wrap responses in objects like {"data": ...}, {"result": ...}, {"error": ...}
+ * This handles the "LLM Quirk Handling" documented in README.
+ */
+export const unwrapLLMResponse = (parsed: unknown, schema: AnyZodSchema): unknown => {
+  if (!parsed || typeof parsed !== "object") return parsed;
+
+  const obj = parsed as Record<string, unknown>;
+
+  // If schema expects primitive, try to extract from common wrappers
+  if (isPrimitiveSchema(schema)) {
+    // Try common wrapper keys
+    for (const key of ["data", "result", "response", "output", "answer", "error", "message", "text", "value"]) {
+      if (key in obj && Object.keys(obj).length === 1) {
+        return obj[key];
+      }
+    }
+    // If single key object, extract its value
+    const keys = Object.keys(obj);
+    if (keys.length === 1) {
+      return obj[keys[0]];
+    }
+  }
+
+  // For objects, check for "data" wrapper (standard provider contract)
+  if ("data" in obj) {
+    return obj.data;
+  }
+
+  return parsed;
+};
+
+/**
  * Creates a case-insensitive enum schema.
  * LLMs often return enum values in different cases (e.g., "POSITIVE" instead of "positive").
  * This helper normalizes input to lowercase before validation.

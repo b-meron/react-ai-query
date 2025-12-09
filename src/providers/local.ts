@@ -1,6 +1,6 @@
 import { AIExecutionResult, AIProvider, ProviderExecuteArgs, AIError } from "../core/types";
 import { deriveCost, estimateUSD } from "../core/cost";
-import { stableStringify, zodToJsonExample } from "../core/utils";
+import { stableStringify, zodToJsonExample, isPrimitiveSchema, getPrimitiveTypeName, unwrapLLMResponse } from "../core/utils";
 
 export interface LocalProviderConfig {
   endpoint?: string;
@@ -49,21 +49,39 @@ class LocalProviderImpl implements AIProvider {
 
     // Generate JSON example from Zod schema
     const schemaExample = zodToJsonExample(schema);
+    const isPrimitive = isPrimitiveSchema(schema);
+    const primitiveType = getPrimitiveTypeName(schema);
 
-    const systemPrompt = [
-      "You are a deterministic JSON-only function.",
-      "Output ONLY the JSON object. No text before or after.",
-      "Use lowercase for enum values (e.g., 'positive' not 'POSITIVE').",
-      "DO NOT add notes, explanations, or any text outside the JSON.",
-      "If you add anything other than JSON, the system will fail."
-    ].join(" ");
+    const systemPrompt = isPrimitive
+      ? [
+        "You are a deterministic function.",
+        "Output ONLY the raw value requested. No JSON wrapping.",
+        "For strings: output just the text, no quotes.",
+        "For numbers: output just the number.",
+        "For booleans: output just true or false.",
+        "DO NOT wrap in objects like {\"data\": ...} or {\"result\": ...}.",
+        "DO NOT add notes, explanations, or any extra text.",
+      ].join(" ")
+      : [
+        "You are a deterministic JSON-only function.",
+        "Output ONLY the JSON object. No text before or after.",
+        "Use lowercase for enum values (e.g., 'positive' not 'POSITIVE').",
+        "DO NOT add notes, explanations, or any text outside the JSON.",
+        "If you add anything other than JSON, the system will fail."
+      ].join(" ");
 
-    const userContent = [
-      `Task: ${prompt}`,
-      input ? `Context: ${stableStringify(input)}` : null,
-      `Required JSON format: ${schemaExample}`,
-      "Return ONLY the JSON object matching this format."
-    ].filter(Boolean).join("\n");
+    const userContent = isPrimitive
+      ? [
+        `Task: ${prompt}`,
+        input ? `Context: ${stableStringify(input)}` : null,
+        `Return ONLY a ${primitiveType} value. No JSON, no wrapping, just the raw value.`
+      ].filter(Boolean).join("\n")
+      : [
+        `Task: ${prompt}`,
+        input ? `Context: ${stableStringify(input)}` : null,
+        `Required JSON format: ${schemaExample}`,
+        "Return ONLY the JSON object matching this format."
+      ].filter(Boolean).join("\n");
 
     const response = await fetcher(endpoint, {
       method: "POST",
@@ -93,8 +111,22 @@ class LocalProviderImpl implements AIProvider {
     const rawContent = Array.isArray(messageContent)
       ? messageContent.map((c: unknown) => (typeof c === "string" ? c : (c as { text?: string })?.text ?? "")).join("")
       : messageContent;
-    const parsed = typeof rawContent === "string" ? safeJsonParse(rawContent) : rawContent;
-    const data = parsed && typeof parsed === "object" && "data" in parsed ? (parsed as { data: unknown }).data : parsed ?? rawContent;
+
+    // For primitives, try to use raw content first
+    let data: unknown;
+    if (isPrimitive) {
+      const trimmed = typeof rawContent === "string" ? rawContent.trim() : rawContent;
+      if (schema.safeParse(trimmed).success) {
+        data = trimmed;
+      } else {
+        // Fall back to parsing and unwrapping
+        const parsed = typeof rawContent === "string" ? safeJsonParse(rawContent) : rawContent;
+        data = unwrapLLMResponse(parsed, schema);
+      }
+    } else {
+      const parsed = typeof rawContent === "string" ? safeJsonParse(rawContent) : rawContent;
+      data = unwrapLLMResponse(parsed, schema);
+    }
 
     const validated = schema.safeParse(data);
     if (!validated.success) {
