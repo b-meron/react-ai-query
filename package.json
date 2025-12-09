@@ -13,7 +13,13 @@
     "zod",
     "openai",
     "headless",
-    "typescript"
+    "typescript",
+    "query",
+    "hooks",
+    "llm",
+    "data-fetching",
+    "schema",
+    "structured-output"
   ],
   "repository": {
     "type": "git",
