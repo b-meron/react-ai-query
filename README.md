@@ -9,6 +9,8 @@
 
 > Think of it as **React Query for AI**: declare what you need, get typed data back.
 
+**[▶️ Try the Live Demo](https://b-meron.github.io/intent-ui-lib/)**
+
 ## Problem
 
 Raw AI output is unsafe to render in UI. You need:
@@ -147,13 +149,13 @@ Headless render-prop component wrapping `useAI`:
 
 ### Providers
 
-| Provider              | Use Case                                              |
-| --------------------- | ----------------------------------------------------- |
-| `mockProvider`        | Development, deterministic, zero cost                 |
-| `createGroqProvider`  | Free cloud LLMs via Groq, uses `llama-3.1-8b-instant` |
-| `createOpenAIProvider`| Production, uses `gpt-4o-mini` by default             |
-| `createLocalProvider` | Local LLMs (Ollama, LM Studio), $0 cost               |
-| Custom                | Implement `AIProvider` interface                      |
+| Provider               | Use Case                                              |
+| ---------------------- | ----------------------------------------------------- |
+| `mockProvider`         | Development, deterministic, zero cost                 |
+| `createGroqProvider`   | Free cloud LLMs via Groq, uses `llama-3.1-8b-instant` |
+| `createOpenAIProvider` | Production, uses `gpt-4o-mini` by default             |
+| `createLocalProvider`  | Local LLMs (Ollama, LM Studio), $0 cost               |
+| Custom                 | Implement `AIProvider` interface                      |
 
 #### Groq Provider (Free)
 
@@ -177,7 +179,7 @@ const { data } = useAI({
 ```tsx
 import { createOpenAIProvider, useAI } from "intent-ui-lib";
 
-const openaiProvider = createOpenAIProvider({ 
+const openaiProvider = createOpenAIProvider({
   apiKey: "your-openai-api-key",
   model: "gpt-4o-mini", // optional, this is the default
 });
