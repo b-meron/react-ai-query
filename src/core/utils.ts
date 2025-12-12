@@ -10,6 +10,9 @@ import { AIError, AnyZodSchema } from "./types";
  * Uses native AbortSignal.any() when available (Node 20.3+, modern browsers),
  * falls back to a manual implementation for older environments (Node 18).
  * 
+ * TODO: Remove fallback when Node.js 18 support is dropped (EOL April 2025)
+ * Just use: return AbortSignal.any(signals);
+ * 
  * @param signals - Array of AbortSignals to combine
  * @returns A single AbortSignal that aborts when any input signal aborts
  */
@@ -22,6 +25,16 @@ export const combineAbortSignals = (signals: AbortSignal[]): AbortSignal => {
   // Fallback for Node.js 18 and older browsers
   const controller = new AbortController();
 
+  // Track handlers for cleanup
+  const handlers: Array<{ signal: AbortSignal; handler: () => void }> = [];
+
+  const cleanup = () => {
+    for (const { signal, handler } of handlers) {
+      signal.removeEventListener("abort", handler);
+    }
+    handlers.length = 0;
+  };
+
   for (const signal of signals) {
     // If any signal is already aborted, abort immediately
     if (signal.aborted) {
@@ -30,11 +43,12 @@ export const combineAbortSignals = (signals: AbortSignal[]): AbortSignal => {
     }
 
     // Listen for future aborts
-    signal.addEventListener(
-      "abort",
-      () => controller.abort(signal.reason),
-      { once: true }
-    );
+    const handler = () => {
+      cleanup(); // Remove all listeners when any signal aborts
+      controller.abort(signal.reason);
+    };
+    handlers.push({ signal, handler });
+    signal.addEventListener("abort", handler, { once: true });
   }
 
   return controller.signal;
