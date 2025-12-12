@@ -1,51 +1,25 @@
+import apiSchemaSource from "../scenarios/api/schema.ts?raw";
+import errorSchemaSource from "../scenarios/error/schema.ts?raw";
+import extractionSchemaSource from "../scenarios/extraction/schema.ts?raw";
+import feedbackSchemaSource from "../scenarios/feedback/schema.ts?raw";
+import moderationSchemaSource from "../scenarios/moderation/schema.ts?raw";
+import streamingSchemaSource from "../scenarios/streaming/schema.ts?raw";
 import { ScenarioId } from "../scenarios";
 
-// Schema source code for each scenario (formatted for display)
+const trimSchemaSource = (source: string) => {
+  const delimiter = "\nexport type";
+  const endIndex = source.indexOf(delimiter);
+  return endIndex === -1 ? source.trim() : source.slice(0, endIndex).trim();
+};
+
+// Schema source code for each scenario (pulled from each schema file via Vite raw imports)
 const SCHEMA_CODE: Record<ScenarioId, string> = {
-  error: `const errorSummarySchema = z.object({
-  userFriendlyMessage: z.string(),
-  suggestedAction: z.string(),
-  severity: z.enum(["info", "warning", "error", "critical"]),
-  retryable: z.boolean(),
-  technicalContext: z.string()
-});`,
-
-  feedback: `const feedbackAnalysisSchema = z.object({
-  sentiment: z.enum(["positive", "neutral", "negative"]),
-  urgency: z.number().min(1).max(5),
-  category: z.enum(["bug", "feature_request", "praise", "complaint", "question", "other"]),
-  keyPoints: z.array(z.string()),
-  suggestedAction: z.string()
-});`,
-
-  moderation: `const contentModerationSchema = z.object({
-  safe: z.boolean(),
-  confidence: z.number().min(0).max(100),
-  flags: z.array(z.string()),
-  reason: z.string()
-});`,
-
-  extraction: `const dataExtractionSchema = z.object({
-  extractedFields: z.array(z.object({
-    label: z.string(),
-    value: z.string(),
-    type: z.enum(["date", "amount", "name", "email", "phone", "address", "other"])
-  })),
-  summary: z.string()
-});`,
-
-  api: `const apiRequestSchema = z.object({
-  method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-  endpoint: z.string(),
-  queryParams: z.array(z.object({ key: z.string(), value: z.string() })),
-  description: z.string()
-});`,
-
-  streaming: `const streamingResponseSchema = z.object({
-  content: z.string(),
-  wordCount: z.number(),
-  mood: z.enum(["inspiring", "thoughtful", "playful", "dramatic", "serene"])
-});`
+  api: trimSchemaSource(apiSchemaSource),
+  error: trimSchemaSource(errorSchemaSource),
+  extraction: trimSchemaSource(extractionSchemaSource),
+  feedback: trimSchemaSource(feedbackSchemaSource),
+  moderation: trimSchemaSource(moderationSchemaSource),
+  streaming: trimSchemaSource(streamingSchemaSource),
 };
 
 const USAGE_CODE: Record<ScenarioId, string> = {
