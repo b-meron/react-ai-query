@@ -13,7 +13,6 @@ export { SystemPromptPreview } from "./SystemPromptPreview";
 
 // Content
 export { FeatureCard, FEATURES } from "./FeatureCard";
-export { CodeExample, CODE_EXAMPLE } from "./CodeExample";
 export { SchemaViewer } from "./SchemaViewer";
 
 // Results & UI
