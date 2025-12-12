@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AIStreamProvider } from "../../src/core/types";
 import { useAIStream } from "../../src";
 import { SCENARIOS } from "../scenarios";
@@ -19,6 +19,7 @@ export const StreamingPlayground = ({ provider }: StreamingPlaygroundProps) => {
   const [submittedInput, setSubmittedInput] = useState("");
   const [hasStarted, setHasStarted] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [pendingStart, setPendingStart] = useState(false);
   
   // Provider options state
   const [maxTokens, setMaxTokens] = useState<number | undefined>(200);
@@ -53,11 +54,18 @@ export const StreamingPlayground = ({ provider }: StreamingPlaygroundProps) => {
     },
   });
 
+  // Trigger start() after state has been updated
+  useEffect(() => {
+    if (pendingStart && submittedInput) {
+      setPendingStart(false);
+      start();
+    }
+  }, [pendingStart, submittedInput, start]);
+
   const handleStart = () => {
     setSubmittedInput(input);
     setHasStarted(true);
-    // Small delay to ensure state is updated
-    setTimeout(() => start(), 10);
+    setPendingStart(true);
   };
 
   const handleReset = () => {
