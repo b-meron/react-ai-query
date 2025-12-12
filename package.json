@@ -35,6 +35,7 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
+    "predev": "npm run build",
     "dev": "vite",
     "preview": "vite preview",
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",

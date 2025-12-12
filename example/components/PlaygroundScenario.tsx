@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AIProvider } from "../../src/core/types";
+import { AIProvider } from "react-ai-query";
 import { ScenarioId, SCENARIOS, ERROR_EXAMPLES } from "../scenarios";
 import { scenarioConfigs } from "../scenarioConfigs";
 import { AIResultPanel } from "./AIResultPanel";

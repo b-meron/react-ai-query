@@ -1,6 +1,5 @@
 import React from "react";
-import { AIText } from "../../src";
-import { AIError, AIProvider, AnyZodSchema } from "../../src/core/types";
+import { AIText, AIProvider, AnyZodSchema } from "react-ai-query";
 import { CostBadge } from "./CostBadge";
 import { ScenarioId } from "../scenarios";
 

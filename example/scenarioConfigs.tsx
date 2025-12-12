@@ -1,5 +1,5 @@
 import React from "react";
-import { AnyZodSchema } from "../src/core/types";
+import { AnyZodSchema } from "react-ai-query";
 import { ScenarioId } from "./scenarios";
 import {
   errorSummarySchema,

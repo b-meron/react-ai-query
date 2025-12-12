@@ -3,6 +3,7 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "baseUrl": ".",
     "jsx": "react-jsx",
     "strict": true,
     "esModuleInterop": true,
@@ -11,7 +12,10 @@
     "declaration": true,
     "sourceMap": true,
     "outDir": "dist",
-    "types": ["vitest/globals", "vite/client"]
+    "types": ["vitest/globals", "vite/client"],
+    "paths": {
+      "react-ai-query": ["./dist/index.d.ts", "./src/index.ts"]
+    }
   },
   "include": [
     "src",

@@ -1,4 +1,4 @@
-import { clearSessionCache } from "../../src";
+import { clearSessionCache } from "react-ai-query";
 import { ProviderChoice } from "../helpers";
 
 interface HeaderProps {

@@ -4,9 +4,9 @@ import {
   buildUserContent, 
   zodToJsonExample,
   isPrimitiveSchema,
-  getPrimitiveTypeName 
-} from "../../src/core/utils";
-import type { AnyZodSchema } from "../../src/core/types";
+  getPrimitiveTypeName,
+} from "react-ai-query";
+import type { AnyZodSchema } from "react-ai-query";
 
 interface SystemPromptPreviewProps {
   /** The app/scenario prompt (e.g., "Explain this error to a user") */

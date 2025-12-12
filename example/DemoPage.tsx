@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createGroqProvider, createOpenAIProvider, createLocalProvider, mockProvider } from "../src";
+import { createGroqProvider, createOpenAIProvider, createLocalProvider, mockProvider } from "react-ai-query";
 import { GROQ_KEY_STORAGE, OPENAI_KEY_STORAGE, ProviderChoice } from "./helpers";
 import { SCENARIOS, ScenarioId } from "./scenarios";
 import {
@@ -13,7 +13,7 @@ import {
   FEATURES,
   SchemaViewer,
 } from "./components";
-import { AIStreamProvider } from "../src/core/types";
+import { AIStreamProvider } from "react-ai-query";
 
 export default function DemoPage() {
   // Provider state

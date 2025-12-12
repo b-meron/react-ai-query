@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { AIStreamProvider } from "../../src/core/types";
-import { useAIStream } from "../../src";
+import { AIStreamProvider, useAIStream } from "react-ai-query";
 import { SCENARIOS } from "../scenarios";
 import { scenarioConfigs } from "../scenarioConfigs";
 import { StreamingResponse } from "../schemas";
