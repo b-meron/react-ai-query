@@ -10,7 +10,7 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            "react-ai-query": resolve(__dirname, "dist/index.js")
+            "react-ai-query": resolve(__dirname, "src/index.ts")
         }
     }
 });
