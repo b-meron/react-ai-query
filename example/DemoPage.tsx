@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { createGroqProvider, createOpenAIProvider, createLocalProvider, mockProvider } from "react-ai-query";
+import {
+  createGroqProvider,
+  createOpenAIProvider,
+  createLocalProvider,
+  mockProvider,
+  type AIProvider,
+  type AIStreamProvider,
+} from "react-ai-query";
 import { GROQ_KEY_STORAGE, OPENAI_KEY_STORAGE, ProviderChoice } from "./helpers";
 import { SCENARIOS, ScenarioId } from "./scenarios";
+import { scenarioConfigs } from "./scenarioConfigs";
 import {
   Header,
   Footer,
@@ -13,7 +21,11 @@ import {
   FEATURES,
   SchemaViewer,
 } from "./components";
-import { AIStreamProvider } from "react-ai-query";
+
+const isAIStreamProvider = (provider: AIProvider): provider is AIStreamProvider => {
+  const candidate = provider as AIStreamProvider;
+  return candidate.supportsStreaming === true && typeof candidate.executeStream === "function";
+};
 
 export default function DemoPage() {
   // Provider state
@@ -42,12 +54,26 @@ export default function DemoPage() {
   };
 
   // Create provider instance
-  const provider = useMemo(() => {
+  const provider = useMemo<AIProvider>(() => {
     if (providerName === "openai") return createOpenAIProvider({ apiKey: openaiApiKey });
     if (providerName === "local") return createLocalProvider();
     if (providerName === "groq") return createGroqProvider({ apiKey: groqApiKey });
     return mockProvider;
   }, [providerName, groqApiKey, openaiApiKey]);
+
+  const streamingProvider = isAIStreamProvider(provider) ? provider : undefined;
+  const fallbackScenario = useMemo<ScenarioId>(
+    () =>
+      ((Object.keys(SCENARIOS) as ScenarioId[]).find((id) => !scenarioConfigs[id]?.isStreaming) ??
+        "error"),
+    []
+  );
+
+  useEffect(() => {
+    if (!streamingProvider && activeScenario === "streaming") {
+      setActiveScenario(fallbackScenario);
+    }
+  }, [activeScenario, fallbackScenario, streamingProvider]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
@@ -69,18 +95,36 @@ export default function DemoPage() {
         >
           <div className="space-y-4">
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
-              {(Object.keys(SCENARIOS) as ScenarioId[]).map((id) => (
-                <ScenarioTab
-                  key={id}
-                  scenario={SCENARIOS[id]}
-                  active={activeScenario === id}
-                  onClick={() => setActiveScenario(id)}
-                />
-              ))}
+              {(Object.keys(SCENARIOS) as ScenarioId[]).map((id) => {
+                const config = scenarioConfigs[id];
+                const isStreamingScenario = Boolean(config?.isStreaming);
+                const disabled = isStreamingScenario && !streamingProvider;
+
+                return (
+                  <ScenarioTab
+                    key={id}
+                    scenario={SCENARIOS[id]}
+                    active={activeScenario === id}
+                    disabled={disabled}
+                    onClick={() => {
+                      if (!disabled) {
+                        setActiveScenario(id);
+                      }
+                    }}
+                  />
+                );
+              })}
             </div>
             <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
               {activeScenario === "streaming" ? (
-                <StreamingPlayground provider={provider as AIStreamProvider} />
+                streamingProvider ? (
+                  <StreamingPlayground provider={streamingProvider} />
+                ) : (
+                  <div className="rounded-lg border border-amber-700/60 bg-amber-900/10 p-6 text-center text-sm text-amber-200">
+                    Streaming demos require a provider that supports real-time events (OpenAI or Groq).
+                    Switch providers to try it out.
+                  </div>
+                )
               ) : (
                 <PlaygroundScenario scenarioId={activeScenario} provider={provider} />
               )}
