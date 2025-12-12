@@ -144,27 +144,8 @@ class GroqProviderImpl implements AIStreamProvider {
         // Final chunk
         onChunk({ text: fullText, delta: "", done: true });
 
-        // Get usage and finish reason from result
-        const [usage, finishReason] = await Promise.all([
-            result.usage,
-            result.finishReason
-        ]);
-
-        // Debug: Check if JSON appears complete and why stream ended
-        const trimmed = fullText.trim();
-        const looksComplete = trimmed.startsWith("{") && trimmed.endsWith("}");
-        console.log("[Groq Debug] Stream complete.", {
-            length: fullText.length,
-            looksCompleteJSON: looksComplete,
-            finishReason,
-            totalTokens: usage?.totalTokens,
-        });
-        if (!looksComplete) {
-            console.warn("[Groq Debug] Incomplete JSON! Last 100 chars:", fullText.slice(-100));
-            if (finishReason === "length") {
-                console.error("[Groq Debug] Stream stopped due to max_tokens limit! Increase maxTokens.");
-            }
-        }
+        // Get usage from result
+        const usage = await result.usage;
 
         // Parse and validate final result using shared helper (handles primitives)
         const validatedData = parseAndValidateStreamResponse<T>(fullText, schema, "Groq");
