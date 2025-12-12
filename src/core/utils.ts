@@ -314,18 +314,19 @@ export const buildUserContent = (
   isPrimitive: boolean,
   primitiveType: string | null
 ): string => {
+  // User content provides: Task, Context, and Schema format
+  // System prompt already handles: JSON rules, completion requirements, formatting
+  // NO DUPLICATION - user content is just the request, not rules
   return isPrimitive
     ? [
-      `Task: ${prompt}`,
-      input ? `Context: ${stableStringify(input)}` : null,
-      `Return ONLY a ${primitiveType} value. No JSON, no wrapping, just the raw value.`
-    ].filter(Boolean).join("\n")
+      prompt,
+      input ? `\nInput: ${stableStringify(input)}` : null,
+    ].filter(Boolean).join("")
     : [
-      `Task: ${prompt}`,
-      input ? `Context: ${stableStringify(input)}` : null,
-      `Required JSON format: ${schemaExample}`,
-      "Return ONLY valid, complete JSON with ALL fields. Keep content brief."
-    ].filter(Boolean).join("\n");
+      prompt,
+      input ? `\nInput: ${stableStringify(input)}` : null,
+      `\nOutput format: ${schemaExample}`,
+    ].filter(Boolean).join("");
 };
 
 /**

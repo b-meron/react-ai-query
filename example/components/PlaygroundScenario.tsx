@@ -96,8 +96,9 @@ export const PlaygroundScenario = ({ scenarioId, provider }: PlaygroundScenarioP
         
         {/* System Prompt Preview - shows what actually goes to the AI */}
         <SystemPromptPreview
-          systemPrompt={scenario.prompt}
+          appPrompt={scenario.prompt}
           userInput={isDropdownInput ? selectedError.error : input}
+          schema={config.schema}
           inputLabel={isDropdownInput ? "Error Object" : "Your Input"}
         />
       </div>

@@ -127,6 +127,8 @@ export interface Scenario {
   inputType?: "textarea" | "dropdown";
 }
 
+// PROMPTS: Focus on TASK and TONE only - the schema defines WHAT fields to output
+// The package automatically injects schema requirements, so prompts should NOT repeat field names
 export const SCENARIOS: Record<ScenarioId, Scenario> = {
   error: {
     id: "error",
@@ -134,7 +136,8 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
     icon: "⚠️",
     description: "Transform technical errors into user-friendly messages",
     placeholder: "",
-    prompt: "Explain this server error to a non-technical user. Provide a friendly message, suggested action, severity level, whether it's retryable, and brief technical context for support.",
+    // Task: explain the error | Audience: non-technical user | Tone: friendly, helpful
+    prompt: "Explain this error to a non-technical user in a friendly, helpful way.",
     inputType: "dropdown"
   },
   feedback: {
@@ -143,7 +146,8 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
     icon: "💬",
     description: "Analyze customer reviews and feedback with structured insights",
     placeholder: `The new dashboard update is frustrating. I've been a premium user for 2 years and suddenly my saved filters are gone. The export feature also seems slower than before. Please fix this ASAP - I rely on this for my daily reports.`,
-    prompt: "Analyze this customer feedback. Extract sentiment, urgency (1-5), category, key points, and suggest an action."
+    // Task: analyze feedback | Output defined by schema
+    prompt: "Analyze this customer feedback for a support team."
   },
   moderation: {
     id: "moderation",
@@ -151,7 +155,8 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
     icon: "🛡️",
     description: "Check content safety with confidence scores and detailed flags",
     placeholder: `Check out our amazing new product! Visit example.com/deal for exclusive discounts. Limited time offer - act now before it's gone! Share with friends to unlock bonus rewards.`,
-    prompt: "Moderate this content for safety. Determine if it's safe, provide confidence (0-100), list any flags/concerns, and explain your reasoning."
+    // Task: moderate content | Be thorough
+    prompt: "Review this content for policy violations and safety concerns."
   },
   extraction: {
     id: "extraction",
@@ -167,7 +172,8 @@ Contact: support@store.com or call (555) 123-4567
 
 Best regards,
 Sarah from Customer Success`,
-    prompt: "Extract all structured data from this text. Identify dates, amounts, names, emails, phones, addresses, and other key fields. Provide a brief summary."
+    // Task: extract data | Schema defines what types to look for
+    prompt: "Extract all structured data from this text."
   },
   api: {
     id: "api",
@@ -175,7 +181,8 @@ Sarah from Customer Success`,
     icon: "🔌",
     description: "Convert plain English requests into API endpoint suggestions",
     placeholder: `Get all premium users who signed up in the last 30 days and have made at least 2 purchases`,
-    prompt: "Convert this natural language request into an API call. Suggest the HTTP method, endpoint path, query parameters, and briefly describe what it does."
+    // Task: convert to API call | Schema defines the structure
+    prompt: "Convert this request into a REST API call."
   },
   streaming: {
     id: "streaming",
@@ -183,7 +190,8 @@ Sarah from Customer Success`,
     icon: "⚡",
     description: "Real-time streaming with live text updates",
     placeholder: `Write a short poem about the beauty of coding at night`,
-    prompt: "Write a creative response to this prompt. Be expressive and detailed."
+    // Task: creative writing | Schema defines mood and word count tracking
+    prompt: "Write a creative response to this prompt."
   }
 };
 

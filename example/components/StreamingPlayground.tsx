@@ -212,8 +212,9 @@ export const StreamingPlayground = ({ provider }: StreamingPlaygroundProps) => {
 
         {/* System Prompt Preview - shows what actually goes to the AI */}
         <SystemPromptPreview
-          systemPrompt={scenario.prompt}
+          appPrompt={scenario.prompt}
           userInput={input}
+          schema={config.schema}
           inputLabel="Your Prompt"
         />
       </div>
