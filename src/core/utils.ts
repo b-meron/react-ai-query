@@ -551,8 +551,8 @@ export const safeJsonParse = (content: string): unknown => {
   result = tryParse(fixed);
   if (result !== undefined) return result;
 
-  // Find where JSON starts
-  const jsonStart = content.search(/\{/);
+  // Find where JSON starts in the cleaned-up string so positions align after escaping literals
+  const jsonStart = fixed.search(/\{/);
   if (jsonStart === -1) return undefined;
 
   // Attempt 3: Extract complete JSON object (handles trailing text)
