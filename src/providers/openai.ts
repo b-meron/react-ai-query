@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { streamText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
-import { AIExecutionResult, AIStreamProvider, ProviderExecuteArgs, StreamExecuteArgs, AIError } from "../core/types";
+import { AIExecutionResult, AIStreamProvider, ProviderExecuteArgs, StreamExecuteArgs } from "../core/types";
 import { resolveCost, estimateUSD } from "../core/cost";
 import {
   zodToJsonExample,
