@@ -1,7 +1,7 @@
 import { streamText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { AIExecutionResult, AIStreamProvider, ProviderExecuteArgs, StreamExecuteArgs, AIError } from "../core/types";
-import { resolveCost, estimateUSD } from "../core/cost";
+import { resolveTokens } from "../core/cost";
 import {
     zodToJsonExample,
     isPrimitiveSchema,
@@ -76,16 +76,11 @@ class GroqProviderImpl implements AIStreamProvider {
         // Use shared response parser for consistency
         const validatedData = parseAndValidateResponse<T>(messageContent, schema, isPrimitive, "Groq");
 
-        const usageTokens = payload?.usage?.total_tokens;
-        const estimatedUSD = usageTokens !== undefined ? estimateUSD(usageTokens) : undefined;
-
-        // Use shared helper with explicit undefined checks (0 is valid)
-        const cost = resolveCost(usageTokens, estimatedUSD, prompt, input);
+        const tokens = resolveTokens(payload?.usage?.total_tokens, prompt, input);
 
         return {
             data: validatedData,
-            tokens: cost.tokens,
-            estimatedUSD: cost.estimatedUSD,
+            tokens,
         };
     }
 
@@ -149,16 +144,11 @@ class GroqProviderImpl implements AIStreamProvider {
 
         // Parse and validate final result using shared helper (handles primitives)
         const validatedData = parseAndValidateStreamResponse<T>(fullText, schema, "Groq");
-        const totalTokens = usage?.totalTokens;
-        const estimatedUSD = totalTokens !== undefined ? estimateUSD(totalTokens) : undefined;
-
-        // Use shared helper with explicit undefined checks (0 is valid)
-        const cost = resolveCost(totalTokens, estimatedUSD, prompt, input);
+        const tokens = resolveTokens(usage?.totalTokens, prompt, input);
 
         return {
             data: validatedData,
-            tokens: cost.tokens,
-            estimatedUSD: cost.estimatedUSD,
+            tokens,
         };
     }
 }

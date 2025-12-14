@@ -14,7 +14,6 @@ describe("executeAI", () => {
         expect(typeof result.data).toBe("string");
         expect(result.data.length).toBeGreaterThan(0);
         expect(result.tokens).toBeGreaterThan(0);
-        expect(result.estimatedUSD).toBeGreaterThan(0);
         expect(result.fromCache).toBe(false);
     });
 
@@ -38,6 +37,7 @@ describe("executeAI", () => {
         expect(result1.fromCache).toBe(false);
         expect(result2.fromCache).toBe(true);
         expect(result1.data).toBe(result2.data);
+        expect(result2.tokens).toBe(0);
     });
 
     it("uses fallback on validation error", async () => {

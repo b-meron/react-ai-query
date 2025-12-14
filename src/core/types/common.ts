@@ -75,21 +75,19 @@ export class AIError extends Error {
 
 /**
  * Cost breakdown for an AI request.
- * Tracks token usage and estimated USD cost.
+ * Tracks token usage so you can compare prompts or throttle totals.
  * 
  * @example
  * ```ts
  * const { cost } = useAI({ ... });
  * if (cost) {
- *   console.log(`Used ${cost.tokens} tokens ($${cost.estimatedUSD.toFixed(4)})`);
+ *   console.log(`Used ${cost.tokens} tokens for this request`);
  * }
  * ```
  */
 export interface CostBreakdown {
     /** Total tokens used (prompt + completion) */
     tokens: number;
-    /** Estimated cost in USD based on token usage */
-    estimatedUSD: number;
 }
 
 /**

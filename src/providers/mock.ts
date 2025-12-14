@@ -1,5 +1,5 @@
 import { AIExecutionResult, AIProvider, AnyZodSchema, ProviderExecuteArgs } from "../core/types";
-import { deriveCost } from "../core/cost";
+import { deriveTokens } from "../core/cost";
 import { stableStringify } from "../core/utils";
 
 interface ZodDef {
@@ -313,12 +313,11 @@ class MockProviderImpl implements AIProvider {
   name = "mock";
 
   async execute<T>({ prompt, input, schema }: ProviderExecuteArgs): Promise<AIExecutionResult<T>> {
-    const cost = deriveCost(prompt, input);
+    const tokens = deriveTokens(prompt, input);
     const data = buildMockData(schema, prompt, input) as T;
     return {
       data,
-      tokens: cost.tokens,
-      estimatedUSD: cost.estimatedUSD
+      tokens,
     };
   }
 }

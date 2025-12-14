@@ -40,7 +40,7 @@ Raw AI output is unsafe to render in UI. You need:
 
 - ✅ **Deterministic responses** — same input → same output
 - ✅ **Strict schema validation** — Zod-validated, typed results
-- ✅ **Cost awareness** — token counting, USD estimation, caching
+- ✅ **Cost awareness** — token counting, caching, and usage insights
 - ✅ **Headless rendering** — you control the DOM, not the library
 - ✅ **Streaming support** — real-time responses with schema validation
 
@@ -108,7 +108,7 @@ export function StreamingSummary({ error }: { error: Error }) {
 | **Schema-safe**   | Auto schema injection + Zod validation before rendering  |
 | **Fail-safe**     | Retries + timeouts + typed errors + observable fallbacks |
 | **Headless**      | Render props only — no UI opinions                       |
-| **Cost-aware**    | Token counting, USD estimation, session caching          |
+| **Cost-aware**    | Token counting and session caching                       |
 | **Pluggable**     | Mock, OpenAI, Groq, local LLM, or custom providers       |
 | **Streaming**     | Real-time responses with `useAIStream` and `<AIStream>`  |
 
@@ -152,7 +152,7 @@ const {
   data, // T | undefined - validated response data
   loading, // boolean - request in progress
   error, // AIError | undefined - error if failed
-  cost, // CostBreakdown | undefined - { tokens, estimatedUSD }
+  cost, // CostBreakdown | undefined - { tokens }
   fromCache, // boolean | undefined - served from cache?
   usedFallback, // boolean | undefined - fallback was used?
   fallbackReason, // string | undefined - why fallback triggered
@@ -171,7 +171,8 @@ const {
   timeoutMs: 15000, // Default: 15000ms
   retry: 1, // Retry attempts after first failure
   fallback: "Default text", // Value to use on failure
-  providerOptions: { // Pass additional options to provider
+  providerOptions: {
+    // Pass additional options to provider
     topP: 0.9,
     frequencyPenalty: 0.5,
   },
@@ -499,7 +500,6 @@ Result from provider execution:
 interface AIExecutionResult<T> {
   data: T;
   tokens: number;
-  estimatedUSD: number;
   fromCache?: boolean;
   usedFallback?: boolean;
   fallbackReason?: string;
@@ -513,7 +513,6 @@ Cost information returned from hooks:
 ```tsx
 interface CostBreakdown {
   tokens: number;
-  estimatedUSD: number;
 }
 ```
 
@@ -572,37 +571,37 @@ const { text } = useAIStream({
   prompt: "Write a poem",
   schema: z.string(),
   provider,
-  
+
   // First-class option - limit output length
   maxTokens: 100, // Prevents runaway responses
-  
+
   // Escape hatch - any provider-specific options
   providerOptions: {
-    topP: 0.9,              // Nucleus sampling
-    frequencyPenalty: 0.5,  // Reduce repetition
-    presencePenalty: 0.3,   // Encourage new topics
-    seed: 42,               // Reproducibility
-    stop: ["\n\n"],         // Stop sequences
+    topP: 0.9, // Nucleus sampling
+    frequencyPenalty: 0.5, // Reduce repetition
+    presencePenalty: 0.3, // Encourage new topics
+    seed: 42, // Reproducibility
+    stop: ["\n\n"], // Stop sequences
   },
 });
 ```
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `maxTokens` | `number` | Maximum tokens to generate (prevents runaway) |
-| `providerOptions` | `Record<string, unknown>` | Passed directly to provider API |
+| Option            | Type                      | Description                                   |
+| ----------------- | ------------------------- | --------------------------------------------- |
+| `maxTokens`       | `number`                  | Maximum tokens to generate (prevents runaway) |
+| `providerOptions` | `Record<string, unknown>` | Passed directly to provider API               |
 
 **Common `providerOptions`:**
 
-| Option | Description |
-|--------|-------------|
-| `topP` | Nucleus sampling (0-1) |
-| `topK` | Top-k sampling |
-| `frequencyPenalty` | Penalize repeated tokens |
-| `presencePenalty` | Penalize tokens that already appeared |
-| `stop` | Stop sequences (array of strings) |
-| `seed` | For reproducibility |
-| `logitBias` | Adjust token probabilities |
+| Option             | Description                           |
+| ------------------ | ------------------------------------- |
+| `topP`             | Nucleus sampling (0-1)                |
+| `topK`             | Top-k sampling                        |
+| `frequencyPenalty` | Penalize repeated tokens              |
+| `presencePenalty`  | Penalize tokens that already appeared |
+| `stop`             | Stop sequences (array of strings)     |
+| `seed`             | For reproducibility                   |
+| `logitBias`        | Adjust token probabilities            |
 
 These options are passed through to all providers (OpenAI, Groq, Local). Unknown options are ignored by providers that don't support them.
 
@@ -667,7 +666,6 @@ const customProvider: AIProvider = {
     return {
       data,
       tokens: tokens ?? 0,
-      estimatedUSD: ((tokens ?? 0) / 1000) * 0.002,
     };
   },
 };
@@ -733,7 +731,7 @@ const streamingProvider: AIStreamProvider = {
     // Validate final result
     const data = parseAndValidateStreamResponse<T>(fullText, schema, "Custom");
 
-    return { data, tokens: 100, estimatedUSD: 0.0002 };
+    return { data, tokens: 100 };
   },
 };
 ```
@@ -870,7 +868,6 @@ export const proxyProvider: AIProvider = {
     return {
       data: validated.data as T,
       tokens: data.usage?.total_tokens || 0,
-      estimatedUSD: ((data.usage?.total_tokens || 0) / 1000) * 0.002,
     };
   },
 };
@@ -929,7 +926,9 @@ if (usedFallback) {
 ## Cost Model
 
 - **Token estimation**: `ceil(prompt.length/4) + ceil(input.length/4) + 8`
-- **USD estimation**: `tokens / 1000 * 0.002`
+- **Provider-reported tokens**: When a provider shares `usage.total_tokens` we prefer the real count; only providers that don't report usage fall back to the heuristic.
+- **Token-only reporting**: Cost is surfaced as tokens so you can map it to your provider pricing.
+- **Cache hits**: Cached responses return `tokens: 0` since no new model call is made once `fromCache` is `true`.
 - **Session caching**: Enabled by default, avoids repeated API calls
 - **Real usage**: If provider returns actual token count, it's used instead
 
@@ -1045,8 +1044,7 @@ Providers return JSON, never React components:
 ```json
 {
   "data": "Your validated result",
-  "tokens": 42,
-  "estimatedUSD": 0.002
+  "tokens": 42
 }
 ```
 

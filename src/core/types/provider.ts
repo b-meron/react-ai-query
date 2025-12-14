@@ -17,7 +17,6 @@ import { AnyZodSchema, ModelOptions } from "./common";
  * const result: AIExecutionResult<{ summary: string }> = {
  *   data: { summary: "This is a summary" },
  *   tokens: 150,
- *   estimatedUSD: 0.0003,
  *   fromCache: false,
  * };
  * ```
@@ -27,8 +26,6 @@ export interface AIExecutionResult<T> {
     data: T;
     /** Total tokens used (prompt + completion) */
     tokens: number;
-    /** Estimated cost in USD */
-    estimatedUSD: number;
     /** Whether this result was served from cache */
     fromCache?: boolean;
     /** Whether a fallback value was used due to failure */
@@ -74,7 +71,7 @@ export interface ProviderExecuteArgs extends Omit<ModelOptions, 'temperature'> {
  *   name: "custom",
  *   async execute(args) {
  *     // Implementation
- *     return { data, tokens, estimatedUSD };
+ *     return { data, tokens };
  *   },
  * };
  * ```

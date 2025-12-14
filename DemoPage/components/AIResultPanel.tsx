@@ -89,7 +89,6 @@ export function AIResultPanel<T>({
             </p>
             <CostBadge 
               tokens={meta.tokens} 
-              usd={meta.estimatedUSD} 
               fromCache={meta.fromCache} 
               usedFallback={meta.usedFallback} 
             />

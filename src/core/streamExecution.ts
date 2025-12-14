@@ -1,5 +1,5 @@
 import { AIError, AIExecutionResult, AIStreamProvider, AnyZodSchema, StreamChunk } from "./types";
-import { resolveCost } from "./cost";
+import { resolveTokens } from "./cost";
 import { sanitizeInput, sanitizePrompt } from "./sanitize";
 import { combineAbortSignals } from "./utils";
 
@@ -70,13 +70,11 @@ export const executeAIStream = async <T>(args: StreamExecutionArgs<T>): Promise<
         throw new AIError("Stream returned invalid schema", "validation_error", validated.error);
       }
 
-      // Use shared helper with explicit undefined checks (0 is valid)
-      const cost = resolveCost(result.tokens, result.estimatedUSD, prompt, input);
+      const tokens = resolveTokens(result.tokens, prompt, input);
 
       return {
         data: validated.data,
-        tokens: cost.tokens,
-        estimatedUSD: cost.estimatedUSD,
+        tokens,
         fromCache: false,
       };
     } catch (error) {
@@ -118,7 +116,6 @@ export const executeAIStream = async <T>(args: StreamExecutionArgs<T>): Promise<
     return {
       data: fallbackValue,
       tokens: 0,
-      estimatedUSD: 0,
       fromCache: false,
       usedFallback: true,
       fallbackReason: errorMessage,
