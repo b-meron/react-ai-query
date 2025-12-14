@@ -1,6 +1,6 @@
 {
   "name": "react-ai-query",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Schema-safe AI inference for React — headless, cached, cost-aware, deterministic by default.",
   "license": "MIT",
   "type": "module",
