@@ -85,7 +85,7 @@ export function useAIStream<T>(options: UseAIStreamOptions<T>): UseAIStreamResul
       });
 
       setData(result.data);
-      setCost({ tokens: result.tokens, estimatedUSD: result.estimatedUSD });
+      setCost({ tokens: result.tokens });
       setDone(true);
       setIsStreaming(false);
       setLoading(false);

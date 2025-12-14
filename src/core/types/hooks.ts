@@ -72,12 +72,10 @@ export interface UseAIResult<T> {
   loading: boolean;
   /** Error if the request failed */
   error: AIError | undefined;
-  /** Cost breakdown with tokens and USD estimate */
+  /** Cost breakdown with token usage */
   cost?: CostBreakdown;
-  /** Total tokens used (for convenience, also in cost.tokens) */
+  /** Total tokens used (also reflected in cost.tokens) */
   tokens?: number;
-  /** Estimated USD cost (for convenience, also in cost.estimatedUSD) */
-  estimatedUSD?: number;
   /** Whether the result was served from cache */
   fromCache?: boolean;
   /** Whether a fallback value was used due to failure */

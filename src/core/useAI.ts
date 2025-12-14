@@ -8,26 +8,26 @@ import { AIError, AIProvider, UseAIOptions, UseAIResult } from "./types";
  */
 const stableStringify = (value: unknown): string => {
   const seen = new WeakSet();
-  
+
   const serialize = (val: unknown): unknown => {
     if (val === null || val === undefined) return val;
     if (typeof val === "function") return undefined;
     if (typeof val !== "object") return val;
-    
+
     if (seen.has(val as object)) return "[Circular]";
     seen.add(val as object);
-    
+
     if (Array.isArray(val)) {
       return val.map(serialize);
     }
-    
+
     const sorted: Record<string, unknown> = {};
     for (const key of Object.keys(val as object).sort()) {
       sorted[key] = serialize((val as Record<string, unknown>)[key]);
     }
     return sorted;
   };
-  
+
   try {
     return JSON.stringify(serialize(value));
   } catch {
@@ -56,7 +56,6 @@ export function useAI<T>(options: UseAIOptions<T>): UseAIResult<T> {
   const [error, setError] = useState<AIError | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(true); // Start as loading
   const [tokens, setTokens] = useState<number | undefined>(undefined);
-  const [estimatedUSD, setEstimatedUSD] = useState<number | undefined>(undefined);
   const [fromCache, setFromCache] = useState<boolean | undefined>(undefined);
   const [usedFallback, setUsedFallback] = useState<boolean | undefined>(undefined);
   const [fallbackReason, setFallbackReason] = useState<string | undefined>(undefined);
@@ -73,10 +72,10 @@ export function useAI<T>(options: UseAIOptions<T>): UseAIResult<T> {
   const run = useCallback(async () => {
     if (isRunningRef.current) return; // Prevent concurrent runs
     isRunningRef.current = true;
-    
+
     setLoading(true);
     setError(undefined);
-    
+
     try {
       const currentOptions = optionsRef.current;
       const result = await executeAI<T>({
@@ -94,7 +93,6 @@ export function useAI<T>(options: UseAIOptions<T>): UseAIResult<T> {
       });
       setData(result.data);
       setTokens(result.tokens);
-      setEstimatedUSD(result.estimatedUSD);
       setFromCache(result.fromCache);
       setUsedFallback(result.usedFallback);
       setFallbackReason(result.fallbackReason);
@@ -120,9 +118,8 @@ export function useAI<T>(options: UseAIOptions<T>): UseAIResult<T> {
     data,
     loading,
     error,
-    cost: tokens !== undefined && estimatedUSD !== undefined ? { tokens, estimatedUSD } : undefined,
+    cost: tokens !== undefined ? { tokens } : undefined,
     tokens,
-    estimatedUSD,
     fromCache,
     usedFallback,
     fallbackReason,

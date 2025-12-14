@@ -1,5 +1,5 @@
 import { AIExecutionResult, AIProvider, ProviderExecuteArgs, AIError } from "../core/types";
-import { resolveCost, estimateUSD } from "../core/cost";
+import { resolveTokens } from "../core/cost";
 import {
   zodToJsonExample,
   isPrimitiveSchema,
@@ -81,16 +81,11 @@ class LocalProviderImpl implements AIProvider {
     // Use shared response parser for consistency
     const validatedData = parseAndValidateResponse<T>(rawContent, schema, isPrimitive, "Local provider");
 
-    const usageTokens = payload?.usage?.total_tokens;
-    const estimatedUSD = usageTokens !== undefined ? estimateUSD(usageTokens) : undefined;
-
-    // Use shared helper with explicit undefined checks (0 is valid)
-    const cost = resolveCost(usageTokens, estimatedUSD, prompt, input);
+    const tokens = resolveTokens(payload?.usage?.total_tokens, prompt, input);
 
     return {
       data: validatedData,
-      tokens: cost.tokens,
-      estimatedUSD: cost.estimatedUSD,
+      tokens,
     };
   }
 }

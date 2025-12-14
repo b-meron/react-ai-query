@@ -1,6 +1,6 @@
 import { AIError, AIExecutionResult, AIProvider, AnyZodSchema, CachePolicy } from "./types";
 import { buildCacheKey, getFromSessionCache, setSessionCache } from "./cache";
-import { resolveCost } from "./cost";
+import { resolveTokens } from "./cost";
 import { mockProvider } from "../providers/mock";
 import { sanitizeInput, sanitizePrompt } from "./sanitize";
 
@@ -51,7 +51,13 @@ export const executeAI = async <T>(args: {
     : undefined;
   if (cacheKey && cachePolicy === "session") {
     const cached = getFromSessionCache<T>(cacheKey);
-    if (cached) return cached;
+    if (cached) {
+      return {
+        ...cached,
+        tokens: 0,
+        fromCache: true,
+      };
+    }
   }
 
   const attemptExecution = async (): Promise<AIExecutionResult<T>> => {
@@ -74,13 +80,11 @@ export const executeAI = async <T>(args: {
         throw new AIError("Provider returned invalid shape", "validation_error", validated.error);
       }
 
-      // Use shared helper with explicit undefined checks (0 is valid)
-      const cost = resolveCost(result.tokens, result.estimatedUSD, prompt, input);
+      const tokens = resolveTokens(result.tokens, prompt, input);
 
       const finalResult: AIExecutionResult<T> = {
         data: validated.data,
-        tokens: cost.tokens,
-        estimatedUSD: cost.estimatedUSD,
+        tokens,
         fromCache: false
       };
 
@@ -116,7 +120,6 @@ export const executeAI = async <T>(args: {
     return {
       data: fallbackValue,
       tokens: 0,
-      estimatedUSD: 0,
       fromCache: false,
       usedFallback: true,
       fallbackReason: errorMessage

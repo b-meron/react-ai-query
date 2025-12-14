@@ -237,7 +237,7 @@ export const StreamingPlayground = ({ provider }: StreamingPlaygroundProps) => {
               <span className="text-slate-400 text-sm">Waiting to start...</span>
             )}
           </div>
-          {cost && <CostBadge tokens={cost.tokens} usd={cost.estimatedUSD} />}
+          {cost && <CostBadge tokens={cost.tokens} />}
         </div>
 
         {/* Live Text Display */}

@@ -56,7 +56,7 @@ export interface StreamExecuteArgs extends ProviderExecuteArgs {
  *     for await (const chunk of stream) {
  *       args.onChunk({ text: accumulated, delta: chunk, done: false });
  *     }
- *     return { data, tokens, estimatedUSD };
+ *     return { data, tokens };
  *   },
  * };
  * ```
